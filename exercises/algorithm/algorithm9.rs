@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +36,21 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // 添加元素到最后一个位置
+        self.items.push(value);
+        self.count += 1;
+        
+        let mut idx = self.count;
+        // 维护堆的性质，向上调整新插入的元素
+        while idx > 1 {
+            let parent_idx = self.parent_idx(idx); // 提前获取父节点索引，避免重复借用
+            if (self.comparator)(&self.items[idx], &self.items[parent_idx]) {
+                self.items.swap(idx, parent_idx);
+                idx = parent_idx;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +70,14 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+
+        if right > self.count || (self.comparator)(&self.items[left], &self.items[right]) {
+            left
+        } else {
+            right
+        }
     }
 }
 
@@ -84,8 +103,26 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+
+        // 取出根节点（堆顶元素）
+        let root = self.items.swap_remove(1);
+        self.count -= 1;
+
+        // 维护堆的性质，向下调整根节点
+        let mut idx = 1;
+        while self.children_present(idx) {
+            let smallest_child = self.smallest_child_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[smallest_child]) {
+                break;
+            }
+            self.items.swap(idx, smallest_child);
+            idx = smallest_child;
+        }
+
+        Some(root)
     }
 }
 
